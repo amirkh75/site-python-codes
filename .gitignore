@@ -1,5 +1,7 @@
+# i add this part.
 .my_env/
-.env.dev
+.env.prod
+.env.prod.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
