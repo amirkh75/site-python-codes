@@ -1,0 +1,15 @@
+{% extends './base.html' %}
+
+{% block content %}
+
+
+{% if error %}
+{{ error }}
+
+<br/>
+<br/>
+{% endif %}
+
+user email  {{ user.email }}
+
+{% endblock %}

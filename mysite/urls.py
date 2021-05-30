@@ -22,8 +22,10 @@ from upload.views import image_upload
 
 urlpatterns = [
     path("", image_upload, name="upload"),
+    path("", image_upload, name="home"),
     path("admin/", admin.site.urls),
     path('blog/', include('blog.urls', namespace='blog')),
+    path('users/',include ('users.urls', namespace='users'))
 ]
 
 if bool(settings.DEBUG):
