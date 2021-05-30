@@ -4,7 +4,7 @@ from django.views.generic import ListView
 from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from taggit.models import Tag
-
+from django.db.models import Count
 
 from .models import Post, Comment
 from .forms import EmailPostForm, CommentForm
@@ -53,6 +53,11 @@ def post_detail(request, year, month, day, post):
     comments = post.comments.filter(active=True)
     new_comment = None
 
+    # List of similar posts
+    post_tags_ids = post.tags.values_list('id', flat=True)
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
+    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags','-publish')[:4]
+
     if request.method == 'POST':
         # A comment was posted
         comment_form = CommentForm(data=request.POST)
@@ -72,7 +77,7 @@ def post_detail(request, year, month, day, post):
                                                      'comments': comments,
                                                      'new_comment': new_comment,
                                                      'comment_form': comment_form,
-                                                      'User':User})
+                                                     'similar_posts': similar_posts})
 
 def post_share(request, post_id):
     # Retrieve post by id
