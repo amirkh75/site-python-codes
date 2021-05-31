@@ -20,12 +20,20 @@ from django.conf.urls.static import static
 
 from upload.views import image_upload
 
+from django.contrib.sitemaps.views import sitemap
+from blog.sitemaps import PostSitemap
+
+sitemaps = {
+    'posts': PostSitemap,
+}
+
 urlpatterns = [
     path("", image_upload, name="upload"),
     path("", image_upload, name="home"),
     path("admin/", admin.site.urls),
     path('blog/', include('blog.urls', namespace='blog')),
-    path('users/',include ('users.urls', namespace='users'))
+    path('users/',include ('users.urls', namespace='users')),
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
 ]
 
 if bool(settings.DEBUG):
