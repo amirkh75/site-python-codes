@@ -5,9 +5,12 @@ from django.core.mail import send_mail
 from django.contrib.auth import get_user_model
 from taggit.models import Tag
 from django.db.models import Count
+from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+from django.contrib.postgres.search import TrigramSimilarity
+
 
 from .models import Post, Comment
-from .forms import EmailPostForm, CommentForm
+from .forms import EmailPostForm, CommentForm, SearchForm
 
 
 def post_list(request, tag_slug=None):
@@ -35,11 +38,13 @@ def post_list(request, tag_slug=None):
                   'posts': posts,
                   'tag': tag})
 
+
 class PostListView(ListView):
     queryset = Post.published.all()
     context_object_name = 'posts'
     paginate_by = 3
     template_name = 'blog/post/list.html'
+
 
 def post_detail(request, year, month, day, post):
     post = get_object_or_404(Post, slug=post,
@@ -105,3 +110,39 @@ def post_share(request, post_id):
     else:
         form = EmailPostForm()
     return render(request, 'blog/post/share.html', {'post': post, 'form': form, 'sent': sent})
+
+def post_search(request):
+    form = SearchForm()
+    query = None
+    trigram = None
+    results = []
+    results_trigram = []
+
+    if 'query' in request.GET:
+        form = SearchForm(request.GET)
+
+        if form.is_valid():
+            query = form.cleaned_data['query']
+
+            search_vector = SearchVector('title', weight='A') + SearchVector('body', weight='B')
+            search_query = SearchQuery(query)
+
+            results = Post.published.annotate(
+                rank=SearchRank(search_vector,
+                search_query)
+                ).filter(rank__gte=0.3).order_by('-rank')
+    """
+    if 'trigram' in request.GET:
+        form = SearchForm(request.GET)
+
+        if form.is_valid():
+            trigram = form.cleaned_data['trigram']
+            results_trigram = results = Post.published.annotate(
+                                        similarity=TrigramSimilarity('title', query),
+                                        ).filter(similarity__gt=0.1).order_by('-similarity')
+    """
+    return render(request, 'blog/post/search.html',
+                {'form': form,
+                'query': query,
+                'results': results,
+                'results_trigram': results_trigram})
