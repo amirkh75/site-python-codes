@@ -7,6 +7,8 @@ from taggit.models import Tag
 from django.db.models import Count
 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
 from django.contrib.postgres.search import TrigramSimilarity
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
 
 from .models import Post, Comment
@@ -84,6 +86,7 @@ def post_detail(request, year, month, day, post):
                                                      'comment_form': comment_form,
                                                      'similar_posts': similar_posts})
 
+@login_required
 def post_share(request, post_id):
     # Retrieve post by id
     post = get_object_or_404(Post, id=post_id, status='published')
@@ -106,6 +109,10 @@ def post_share(request, post_id):
             send_mail(subject, message, 'python.codes.site@gmail.com', [cd['to']])
 
             sent = True
+            messages.success(request, 'email successfully send.')
+
+        else:
+            messages.error(request, 'Error , email send faild.')
             
     else:
         form = EmailPostForm()

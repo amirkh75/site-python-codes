@@ -3,6 +3,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth import get_user_model
 from django.contrib import auth
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 
 
 def users_detail(request, user_id):
@@ -16,10 +17,10 @@ def signup(request):
     if request.method == "POST":
         if request.POST['password1'] == request.POST['password2']:
             try:
-                User.objects.get(username = request.POST['username'])
-                return render (request,'users/signup.html', {'error':'Username is already taken!'})
+                User.objects.get(email = request.POST['email'])
+                return render (request,'users/signup.html', {'error':'email is already for a user!'})
             except User.DoesNotExist:
-                user = User.objects.create_user(request.POST['username'],password=request.POST['password1'])
+                user = User.objects.create_user(request.POST['email'],password=request.POST['password1'])
                 auth.login(request,user)
                 return redirect('home')
         else:
@@ -29,7 +30,7 @@ def signup(request):
 
 def login(request):
     if request.method == 'POST':
-        user = auth.authenticate(username=request.POST['username'],password = request.POST['password'])
+        user = auth.authenticate(email=request.POST['email'],password = request.POST['password'])
         if user is not None:
             auth.login(request,user)
             return redirect('home')
@@ -41,5 +42,8 @@ def login(request):
 def logout(request):
     if request.method == 'POST':
         auth.logout(request)
-    return redirect('home')
+        return redirect('home')
+    
+    else:
+        return render(request, 'users/logout.html')
 

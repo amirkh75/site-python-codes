@@ -12,17 +12,21 @@
 
 <h1>Signup!</h1>
 
-<form method = "POST" action="{% url 'signup' %}">
+<form method = "POST" action="{% url 'users:signup' %}">
     {% csrf_token %}
-    username:
+    email:
     <br/>
-    <input type="text" name="username" />
+    <input type="text" name="email" />
+    <br/>
     <br/>
     Password:
     <br/>
+    <br/>
     <input type="password" name="password1" />
     <br/>
+    <br/>
     confirm Password:
+    <br/>
     <br/>
     <input type="password" name="password2" />
     <br/>
